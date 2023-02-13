@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { createContext, ReactNode, useContext, useState } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import { api } from '../services/api';
 
 
@@ -7,6 +7,9 @@ type AuthContextDTO = {
   user: User
   isUser: boolean,
   signIn: (credentials: SignInProps) => Promise<void>
+  signOut: () => Promise<void>
+  loadingStorage: boolean,
+  loading: boolean,
 }
 
 type User = {
@@ -34,7 +37,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     token: '',
   } );
   const [loading, setLoading] = useState(false);
-
+  const [loadingStorage, setLoadingStorage] = useState(true);
   const isUser = !!user.name;
 
   
@@ -68,11 +71,46 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  async function signOut() {
+    await AsyncStorage.clear()
+    .then(() => {
+      setUser({
+        id: '',
+    email: '',
+    name: '',
+    token: '',
+      })
+    })
+  }
+  useEffect(() => {
+    async function loadAsyncUser(){
+
+      const user = await AsyncStorage.getItem('@pizzaria');
+      const userParsed: User = JSON.parse(user || '{}')
+      if(Object.keys(userParsed).length > 0) {
+      api.defaults.headers.common['Authorization'] =`Bearer ${userParsed.token}`
+
+      setUser({
+        id: userParsed.id,
+        name: userParsed.name,
+        email: userParsed.email,
+        token: userParsed.token
+      })
+      }
+      setLoadingStorage(false)
+    }
+
+    loadAsyncUser()
+  }, [])
+
   return (
     <AuthContext.Provider value={{
       user,
       isUser,
-      signIn  
+      signIn,
+      loadingStorage,
+      signOut,
+      loading
     }}>
       {children}
     </AuthContext.Provider>

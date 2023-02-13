@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import ViewLottie from 'lottie-react-native';
-import { Alert, SafeAreaView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, SafeAreaView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import pizzaLogo from "../../assets/lottie/pizzaprocess.json";
 import { useAuth } from "../../contexts/AuthContext";
 import { styles } from "../SignIn/styles";
@@ -9,7 +9,7 @@ import { styles } from "../SignIn/styles";
 export function SignIn() {
   const [email, setEmail] = useState('gabrielteste@gmail.com');
   const [password, setPassword] = useState('123456');
-  const { signIn } = useAuth()
+  const { signIn, loading } = useAuth()
 
 
   async function handleLogin() {
@@ -46,10 +46,19 @@ export function SignIn() {
           />
 
         <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>
+            {loading ? (
+              
+              <ActivityIndicator size={25} color="#FFFFFF"/>
+            ) :
+            (
+              <Text style={styles.buttonText}>
            ACESSAR 
-
           </Text>
+
+            )
+              
+            }
+
         </TouchableOpacity>
         </View>
     </SafeAreaView>
